@@ -41,7 +41,7 @@ DataChain is a **Decentralized Data Streaming Engine with Global Ordering**.
 
 DataChain is a blockchain-like network engine that groups new messages in blocks. It is operated by an open set of “miners” that can join and leave freely. Miners need to stake a token on an external EVM chain (other chain types can be easily supported in the future), but DataChain becomes aware of the stake without any intermediary.
 
-A first version of the DataChain architecture was presented as [a Snapchain alternative](https://gist.github.com/vrypan/1ae6a60ecb3741ab031b5b06c974acab).
+This [Snapchain alternative proposal](https://gist.github.com/vrypan/1ae6a60ecb3741ab031b5b06c974acab) can be considered the first draft of the DataChain architecture.
 
 The purpose of this project is to implement the DataChain engine. Any interested party should be able to run their own DataChain network by:
 
