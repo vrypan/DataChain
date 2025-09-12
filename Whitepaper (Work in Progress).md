@@ -1,4 +1,4 @@
-# DataChain Whitepaper
+# DataChain Witepaper
 
 (Work in progress)
 
@@ -49,7 +49,7 @@ While there are many resemblances between a DataChain blockchain and a typical b
 This means that a message with a valid signature is valid.
 
 > [!NOTE]
-TBD: custom data chain implementations may add additional validity rules that depend on the data inside a transaction. We have to define how/when this is permitted.
+TBD: custom DataChain deployments may add additional validity rules that depend on the data inside a transaction. We have to define how/when this is permitted.
 
 This is in contrast to a typical blockchain transaction which may have a valid signature, but may be invalid for many reasons, for example, if it tries to spend funds that are not available.
 
@@ -79,3 +79,39 @@ enum SignatureScheme {
 }
 ```
 
+
+# Architecture
+
+## Staking Contract
+A ETH staking contract is deployed on the parent chain. The contract allows any address to stake ETH. Staked ETH can be reclaimed after 100 days (TBD).
+
+## Miners
+Miners have two sources of data:
+- They listen for events on the parent chain. (They may also proactively query the parent chain.)
+- They receive messages from clients
+
+Each miner has a public key. When a miner stakes ETH on the staking contract, it also states the public key it will be using.
+
+## Onchain Events
+
+Miners listen for specific onchain events such as events emitted by the Identity smart contract (user registration, user public key addition/removal), or the Staking contract (new stake, stake removed).
+
+Miners encapsulate these events as special messages of type `OnchainEvent`. A detailed description and message specification of `OnchainEvent` messages will be added to this section later.
+
+A special `OnchainEvent` is `ONCHAIN_EVENT_BLOCK` that contains a parent chain  block hash and its height.
+
+## Block construction
+
+Miners construct the next blockchain block according to these rules.
+
+1. Every block must contain exactly one `ONCHAIN_EVENT_BLOCK` message.  
+2. Every block must contain the hash of the previous block.  
+3. A block can only contain messages not present in earlier blocks.  
+4. All messages included in a block are lexicographically ordered by hash, after prepending a byte that prioritizes system events (ONCHAIN_EVENT_BLOCK, then ID registrations, storage rents, public keys, etc.).  
+5. All messages included in a block must be sequentially valid, i.e. if N and messages 1..N-1 are valid, then message N is valid.
+
+> [!NOTE]
+> A DataChain Network may be configured to have a slower block generation rate than the parent chain. In this case, and additional restriction that valid `ONCHAIN_EVENT_BLOCK` messages must contain a height divisible by a constant number can be added.
+
+> [!NOTE]
+> Re: rules #4 and #5. There are cases when a block contains onchain events that may define the validity of a message, for example the (onchain) registration of a new user, and a message signed by the user.
