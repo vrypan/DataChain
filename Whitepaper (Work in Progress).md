@@ -37,7 +37,9 @@ There are two types of nodes in a DataChain network:
 - **Miners** assemble messages in blocks and broadcast the next valid block.
 - **Hubs** listen for blocks, and when they receive a valid block they add it to their instance/version of the blockchain.
 
-In this architecture, miners serve new blocks to the network and hubs consume new blocks. Applications built on top of a DataChain network connect to one or more hubs.
+In this architecture, miners serve new blocks to the network and hubs receive these blocks. Hubs are observers, in the sense that they are free to accept or reject blocks, or pick the one they prefer if they have to choose between two different blocks (fork).
+
+Applications built on top of a DataChain network connect to one or more hubs.
 
 > [!NOTE]
 > Readers familiar with blockchain design, can think of messages as transactions, miners as sequencers and hubs as full nodes.
@@ -100,8 +102,39 @@ Miners encapsulate these events as special messages of type `OnchainEvent`. A de
 
 A special `OnchainEvent` is `ONCHAIN_EVENT_BLOCK` that contains a parent chain  block hash and its height.
 
-## Block construction
+## Block structure and construction
+Every block consists of a block header and the block body (list of messages).
 
+### OCEC (OnChain Events Count)
+Every DataChain block an **OnChainEventsCount (OCEC)** which is the number of OnChainEvents the block and all the previous blocks contain.
+
+```
+ocec = sum( count(e) for e in OnChainEvents in all blocks )
+```
+
+### Block Score
+
+Every DataChain block has a **BlockScore**.
+
+```
+BlockScore = number_of_messages / number_of_blocks
+```
+
+- `number_of_messages` is the number of messages in the block 
+- `number_of_blocks` is the number of blocks this miner signed in the last N (for example 100) previous blocks of the chain.
+
+The score is higher if a block has more messages, and goes down as a miner adds more blocks.
+
+### Block header
+The block header has the following fields:
+- Block Hash
+- Previous Block Hash
+- Miner address
+- Block signature
+- OCEC (onchain events count in all blocks)
+- Number of messages in the block
+
+### Block construction
 Miners construct the next blockchain block according to these rules.
 
 1. Every block must contain exactly one `ONCHAIN_EVENT_BLOCK` message.  
