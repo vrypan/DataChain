@@ -1,4 +1,4 @@
-# DataChain Witepaper
+# DataChain Whitepaper
 
 (Work in progress)
 
