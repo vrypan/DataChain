@@ -96,7 +96,7 @@ Each miner has a public key. When a miner stakes ETH on the staking contract, it
 
 ## Onchain Events
 
-Miners listen for specific onchain events such as events emitted by the Identity smart contract (user registration, user public key addition/removal), or the Staking contract (new stake, stake removed).
+Miners listen for specific onchain events such as events emitted by the Identity smart contract (user registration, user public key addition/removal), or the Staking smart contract (new stake, stake removed).
 
 Miners encapsulate these events as special messages of type `OnchainEvent`. A detailed description and message specification of `OnchainEvent` messages will be added to this section later.
 
@@ -125,13 +125,13 @@ BlockScore = number_of_messages / number_of_blocks
 
 The score is higher if a block has more messages, and goes down as a miner adds more blocks.
 
-### Block header
+### Block header data
 The block header has the following fields:
 - Block Hash
 - Previous Block Hash
 - Miner address
 - Block signature
-- OCEC (onchain events count in all blocks)
+- Block OCEC
 - Number of messages in the block
 
 ### Block construction
@@ -148,3 +148,22 @@ Miners construct the next blockchain block according to these rules.
 
 > [!NOTE]
 > Re: rules #4 and #5. There are cases when a block contains onchain events that may define the validity of a message, for example the (onchain) registration of a new user, and a message signed by the user.
+
+## Hubs
+
+Hubs watch the blocks published by miners and add them to the copy of the blockchain they keep locally:
+
+- Hubs do not listen proactively for onchain events, but they validate them when they find them in a block.
+- Hubs validate blocks and reject invalid ones.
+- If they are missing blocks, they ask other hubs to provide them.
+
+At any point in time, a hub follows a chain, with blocks B0, B1,..., Bn. A new block (NB) is added only if `OCEC(NB)>OCEC(Bn)`.
+
+A hub may receive two new blocks, Ci and Dj, from two miners, that correspond to chains C0..Ci and D0..Dj.
+
+Assuming that `OCEC(Ci)>OCEC(Bn)` and `OCEC(Dj)>OCEC(Bn)`, the hub will use the following rules to decide on the next chain tip:
+
+1. If `OCEC(Ci)>OCEC(Dj)`, then the next tip is Ci. (Most onchain events)
+2. If `OCEC(Ci)==OCEC(Dj)`, and `count(C ∩ B) > count(D ∩ B)`, then the next tip is Ci (minimum reorg)
+3. If `OCEC(Ci) == OCEC(Dj)`, and `C ∩ B == D ∩ B`, and `BlockScore(Ci) > BlockScore(Dj)`, then the next tip is Ci (highest BlockScore).
+
