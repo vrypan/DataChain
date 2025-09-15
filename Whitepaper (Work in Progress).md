@@ -17,7 +17,7 @@ This document specifies **DataChain**, a decentralized data-streaming engine tha
 
 A DataChain Network **requires at least one “good” participant** that has an inherent interest in making the chain work.
 
-**Censorship resistance** is a top priority in DataChain design.
+However, the DataChain design ensures that **censoring the network for long comes with an exponential cost** (exponentially high staked amount to be precise).
 
 
 ## Terminology
